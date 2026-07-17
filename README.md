@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kepegawaian v2
 
-## Getting Started
+**Live:** https://pegawai-two.kensetsu.my.id/
 
-First, run the development server:
+Sistem Data Pegawai modern dibangun ulang dengan:
+
+- **Next.js 16** + App Router
+- **TypeScript**
+- **Drizzle ORM** + Drizzle Kit (migrations)
+- **Hono** untuk API routes
+- **Better Auth** untuk autentikasi & role-based access
+- **Tailwind CSS** + **shadcn/ui**
+- **MySQL/MariaDB**
+
+## Fitur
+
+- Autentikasi (login, register, logout)
+- Role-based access: `admin` (CRUD) dan `staff` (read-only)
+- Modul Pegawai (CRUD + soft delete + search + pagination + export CSV)
+- Modul Jabatan (CRUD + soft delete + search + pagination + export CSV)
+- Modul Penugasan Jabatan (CRUD dengan JOIN + soft delete + search + pagination + export CSV)
+- Manajemen User (admin-only): tambah, edit role, hapus user
+
+## Prasyarat
+
+- Node.js 20+
+- MySQL 8.0+ atau MariaDB 10.5+
+- Docker (opsional, untuk cara 1)
+
+## Kompatibilitas Database
+
+Project ini kompatibel dengan **MySQL 8.0+** dan **MariaDB 10.5+**.
+
+- Semua query menggunakan standard SQL (`SELECT`, `INSERT`, `UPDATE`, `JOIN`, `COUNT`) tanpa `LATERAL JOIN` atau fungsi khusus MariaDB/MySQL.
+- Migration menggunakan `DEFAULT (now())` untuk kolom `timestamp`, yang didukung sejak MySQL 8.0.13 dan MariaDB 10.2.3.
+- Driver `mysql2` yang digunakan support kedua database.
+
+> **Catatan**: Project ini telah diuji langsung pada MariaDB 10.11. Untuk MySQL 8 native, sesuaikan `DATABASE_URL` di `.env`.
+
+---
+
+## Tutorial Setup
+
+### Cara 1: Docker (Direkomendasikan)
+
+**Prasyarat:** Docker dan docker-compose terinstall.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Clone repository
+git clone https://github.com/user1907/kepegawaian-2.git
+cd kepegawaian-2
+
+# 2. Buat file .env dari contoh
+cp .env.example .env
+
+# 3. Jalankan dengan docker-compose
+docker-compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikasi akan tersedia di http://localhost:3000 dan database di port host **3307**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Setelah container berjalan, lakukan migrate dan seed:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker-compose exec app npm run db:migrate
+docker-compose exec app npm run db:seed
+```
 
-## Learn More
+### Cara 2: Manual (Lokal)
 
-To learn more about Next.js, take a look at the following resources:
+**Prasyarat:** Node.js 20+ dan MySQL/MariaDB aktif di port 3306.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# 1. Clone repository
+git clone https://github.com/user1907/kepegawaian-2.git
+cd kepegawaian-2
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 2. Install dependencies
+npm install
 
-## Deploy on Vercel
+# 3. Buat file .env dari contoh
+cp .env.example .env
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Sesuaikan `.env` sesuai konfigurasi database kamu:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+DATABASE_URL=mysql://root:root@localhost:3306/kepegawaian
+BETTER_AUTH_SECRET=change-me-in-production-to-a-random-string
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+```bash
+# 4. Buat database MySQL
+mysql -u root -proot -e "CREATE DATABASE kepegawaian CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 5. Jalankan migrasi
+npm run db:migrate
+
+# 6. Seed data awal
+npm run db:seed
+
+# 7. Jalankan dev server
+npm run dev
+```
+
+Buka http://localhost:3000 di browser.
+
+---
+
+## Script Penting
+
+```bash
+npm run dev          # Dev server
+npm run build        # Production build
+npm run db:generate  # Generate Drizzle migration
+npm run db:migrate   # Apply migrations
+npm run db:seed      # Seed data awal
+npm run db:studio    # Drizzle Studio
+```
+
+## Struktur Proyek
+
+```
+app/
+  api/[[...route]]/       # Hono API routes
+  api/auth/[...all]/      # Better Auth handler
+  (pages)/                # UI pages
+components/               # React components + shadcn/ui
+lib/
+  db/                     # Drizzle schema & client
+  auth.ts                 # Better Auth config
+  auth-client.ts          # Better Auth client
+  api-auth.ts             # Hono auth middleware
+  validations/            # Zod schemas
+scripts/seed.ts           # Seed script
+proxy.ts                  # Next.js proxy (auth protection)
+```
+
+## Catatan Keamanan
+
+- Password di-hash dengan bcrypt via Better Auth.
+- Setiap halaman dilindungi oleh `proxy.ts`.
+- Operasi tulis (create, update, delete) memerlukan role `admin`.
+- Halaman register publik selalu membuat user dengan role `staff`.
+- Admin dapat mengelola user lain melalui menu **Users**.
+- Hapus user menggunakan hard delete (tidak ada soft delete pada tabel user).
+- Jangan menyimpan credential default di production; ubah password setelah login pertama.
+
+## Source Code
+
+- **GitHub:** https://github.com/user1907/kepegawaian-2
