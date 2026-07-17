@@ -86,7 +86,7 @@ Sesuaikan `.env` sesuai konfigurasi database kamu:
 
 ```env
 DATABASE_URL=mysql://root:root@localhost:3306/kepegawaian
-BETTER_AUTH_SECRET=change-me-in-production-to-a-random-string
+BETTER_AUTH_SECRET=<generate-random-secret>
 BETTER_AUTH_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```

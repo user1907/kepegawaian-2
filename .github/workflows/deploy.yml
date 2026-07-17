@@ -44,3 +44,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             DATABASE_URL=mysql://root:root@localhost:3306/kepegawaian
+            BETTER_AUTH_SECRET=ci-build-secret-do-not-use
+            BETTER_AUTH_URL=http://localhost:3000
