@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { db } from "../lib/db";
 import { pegawai, jabatan, jabatanPegawai, user } from "../lib/db/schema";
 import { auth } from "../lib/auth";
