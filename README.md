@@ -6,7 +6,7 @@ Sistem Data Pegawai modern dibangun ulang dengan:
 
 - **Next.js 16** + App Router
 - **TypeScript**
-- **Drizzle ORM** + Drizzle Kit (migrations)
+- **Drizzle ORM** + migrasi via drizzle-orm/mysql2/migrator
 - **Hono** untuk API routes
 - **Better Auth** untuk autentikasi & role-based access
 - **Tailwind CSS** + **shadcn/ui**
@@ -134,6 +134,7 @@ lib/
   auth-client.ts          # Better Auth client
   api-auth.ts             # Hono auth middleware
   validations/            # Zod schemas
+scripts/migrate.ts        # Migration script (drizzle-orm/mysql2/migrator)
 scripts/seed.ts           # Seed script
 proxy.ts                  # Next.js proxy (auth protection)
 ```
